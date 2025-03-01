@@ -8,3 +8,4 @@ reolink-rich-notifications/
 build/
 dist/
 nvrnoti.spec
+venv

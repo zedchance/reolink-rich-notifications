@@ -19,12 +19,18 @@ from email.parser import BytesParser
 import uuid
 import threading
 
+# logging.basicConfig(level=logging.DEBUG)
+
 
 # SMTP server
 stop_event = threading.Event()
 
 
 class CustomHandler(Sink):
+    async def handle_EHLO(self, server, session, envelope, hostname: str):
+        print(f"EHLO received from {hostname}")
+        return '250-Hello {}'.format(hostname)
+
     async def handle_DATA(self, server, session, envelope):
         print("Handling incoming email...")
 
@@ -110,6 +116,7 @@ def send_push_notification(message, attachment_path=None):
                 print("Push sent successfully.")
                 break  # If successful, break the loop
         except requests.exceptions.RequestException as e:
+            print("failed to send notification!")
             logging.error(
                 f"Failed to send push notification (attempt {i + 1}): {e}")
             if i < max_retries - 1:
@@ -148,9 +155,11 @@ def load_or_create_config():
 def ensure_directories_exist():
     script_dir = os.path.dirname(sys.executable)
     folders = ['email', 'attachments']
+    print("script dir", script_dir)
 
     for folder in folders:
         full_path = os.path.join(script_dir, folder)
+        print("full path", full_path)
         if not os.path.exists(full_path):
             os.makedirs(full_path)
 
@@ -331,6 +340,7 @@ class Handler(FileSystemEventHandler):
 if __name__ == '__main__':
     try:
         # Send the initial push notification
+        print("trying to send notification...")
         send_push_notification(
             "reolink-rich-notifications has been started. Enjoy!")
 
